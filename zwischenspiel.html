@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+html, body {
+    margin: 0;
+  overflow: hidden;
+}
+canvas {
+	background-image: url("street.PNG");
+	background-size: cover;
+	height: 100%;
+}
+</style>
+</head>
+<body onload="startGame()">
+
+
+<script>
+
+var myGamePiece; 
+
+var zahler = 0;
+
+var x = 10, y = 100;
+
+var zahl = 3;
+var position_x =200;
+var position_y =200;
+
+var direction =3;
+
+var lastLoop = new Date();
+var ki = true;
+var screenHeight = window.innerHeight;
+var screenWidth = window.innerWidth;
+var img;
+
+var x1 = 350;
+var x2 = 900;
+var x3 = 1500;
+var y1 = 700;
+var y2 = 150;
+
+
+
+function startGame() {
+
+	
+    myGameArea.start();
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width =window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        this.interval = setInterval(updateGameArea, 16);
+
+        window.addEventListener('keydown', function (e) {
+            e.preventDefault();
+			
+            myGameArea.keys = (myGameArea.keys || []);
+            myGameArea.keys[e.keyCode] = (e.type == "keydown");
+        })
+        window.addEventListener('keyup', function (e) {
+			clearmove();
+			
+            myGameArea.keys[e.keyCode] = (e.type == "keydown");
+        })
+
+    },
+
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop : function() {
+        clearInterval(this.interval);
+    }
+}
+
+
+
+
+
+
+function draw() {
+	ctx = myGameArea.context;
+	
+	if(ki == true) {
+		ctx.font = "bold 35px Consolas";
+	}
+	
+
+}
+
+
+
+function updateGameArea() {
+	ctx = myGameArea.context;
+	myGameArea.clear();
+	if(myGameArea.keys && myGameArea.keys[13]) {
+			window.location.href='45987453.php';
+		}
+	
+		
+		/*ctx.fillText("W A S T E D" ,screenWidth/2-150, screenHeight/3*2+150);*/
+		ctx.font = "bold 80px Consolas";
+		ctx.fillText("Success" ,screenWidth/2-170, screenHeight/3*2-180);
+		ctx.font = "bold 50px Consolas";
+		ctx.fillText("Press Enter to continue" ,screenWidth/2-315, screenHeight/3*2-80);
+		showVender = false;
+				//dialogAcc == 6;
+
+    //myGamePiece.newPos();
+    //myGamePiece.update();
+}
+
+
+
+
+
+function clearmove() {
+	//myGamePiece.image.src = "vonRechts.png";
+    myGamePiece.speedX = 0; 
+    myGamePiece.speedY = 0; 
+	
+}
+</script>
+
+</body>
+</html>

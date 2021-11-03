@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+html, body {
+    margin: 0;
+  overflow: hidden;
+  color: black;
+}
+canvas {
+    background-color: #B09CD1
+}
+h1{
+color : black;
+font-size: 20px;
+
+}
+</style>
+</head>
+<body onload="startGame()">
+
+
+
+
+<script>
+
+var myGamePiece; 
+
+var lastLoop = new Date();
+var fps;
+var ki = true;
+var screenHeight=window.innerHeight;
+var screenWidth = window.innerWidth;
+var richtung = "";
+var img;
+var laden;
+var ladenQ;
+var plant;
+var carpet;
+var dialogAcc = 0;
+var dialogE = true;
+
+var xPositionPlayer;
+var yPositionPlayer;
+var wPositionPlayer;
+var hPositionPlayer;
+
+var xPositionObject1 = 250;
+var yPositionObject1 = 0;
+var wPositionObject1 = 100;
+var hPositionObject1 = 450;
+
+var xPositionObject2 = 800;
+var yPositionObject2 = 0;
+var wPositionObject2 = 100;
+var hPositionObject2 = 450;
+
+var xPositionObject3 = 1200;
+var yPositionObject3 = 0;
+var wPositionObject3 = 450;
+var hPositionObject3 = 100;
+
+var xPositionObject4 = 250;
+var yPositionObject4 = 950;
+var wPositionObject4 = 450;
+var hPositionObject4 = 100;
+
+var xPositionObject5 = 1000;
+var yPositionObject5 = 950;
+var wPositionObject5 = 450;
+var hPositionObject5 = 100;
+
+var xPositionObject6 = 1560;
+var yPositionObject6 = 550;
+var wPositionObject6 = 100;
+var hPositionObject6 = 300;
+
+var xQuest = 1440;
+var yQuest = 550;
+var wQuest = 700;
+var hQuest = 300;
+
+var schritt = 0;
+
+function startGame() {
+	myGamePiece = new component(133, 182, "vonRechts.png", 850, 400, "image");
+
+    myGameArea.start();
+	
+
+	
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width =window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        this.interval = setInterval(updateGameArea, 16);
+
+        window.addEventListener('keydown', function (e) {
+            e.preventDefault();
+            myGameArea.keys = (myGameArea.keys || []);
+            myGameArea.keys[e.keyCode] = (e.type == "keydown");
+        })
+        window.addEventListener('keyup', function (e) {
+			clearmove();
+            myGameArea.keys[e.keyCode] = (e.type == "keydown");
+        })
+
+    },
+
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop : function() {
+        clearInterval(this.interval);
+    }
+}
+
+function component(width, height, color, x, y, type) {
+    this.type = type;
+	
+    if (type == "image") {
+        this.image = new Image();
+        this.image.src = color;
+    }
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;    
+    this.update = function() {
+    ctx = myGameArea.context;
+	
+	xPositionPlayer = this.x;
+	yPositionPlayer = this.y;
+	wPositionPlayer = this.width;
+	hPositionPlayer = this.height;
+	
+	draw();
+        if (type == "image") {
+            ctx.drawImage(this.image, 
+                this.x, 
+                this.y,
+                this.width, this.height);
+			
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+			
+        }
+    }
+	
+    this.newPos = function() {
+        this.x += this.speedX;
+        this.y += this.speedY;        
+    }	
+}
+
+
+
+function draw() {
+	ctx = myGameArea.context;
+	
+	
+	if(ki == true) {
+		ctx.font = "bold 64px Consolas";
+		
+	}
+	
+	
+	
+}
+
+
+
+function updateGameArea() {
+	
+	myGameArea.clear();
+	
+	if((xPositionPlayer+133) > screenWidth || xPositionPlayer <= 0 || (yPositionPlayer+182) > screenHeight || yPositionPlayer <= 0) {
+		if((xPositionPlayer+133) > screenWidth) {
+			myGamePiece.speedX = -2;	//rechts
+		}
+		if(xPositionPlayer <= 0) {
+			myGamePiece.speedX = 2;		//links
+		}
+		
+		if((yPositionPlayer+182) > screenHeight) {
+			myGamePiece.speedY = -2;	//oben
+		}
+		
+		if(yPositionPlayer <= 0) {
+			myGamePiece.speedY = 2;
+		}
+	
+		
+		
+		
+	
+	} else {
+		var check = false;
+		if (myGameArea.keys && myGameArea.keys[87]) {myGamePiece.speedY = -2; check = true; richtung = "o" ; myGamePiece.image.src = "vonHinten.png";	
+		}	//oben
+		if (myGameArea.keys && myGameArea.keys[68]) {myGamePiece.speedX = 2; check = true; richtung = "r"; myGamePiece.image.src = "vonLinks.png";	
+		}	//rechts
+		if (myGameArea.keys && myGameArea.keys[65]) {myGamePiece.speedX = -2; check = true; richtung = "l"; myGamePiece.image.src = "vonRechts.png";	
+		}	//links
+		if (myGameArea.keys && myGameArea.keys[83]) {myGamePiece.speedY = 2; check = true; richtung = "u"; myGamePiece.image.src = "vonVorne.png";	
+		}	//unten 
+		
+		if (myGameArea.keys && myGameArea.keys[87] && myGameArea.keys[16]) {myGamePiece.speedY = -6; check = true; richtung = "o";	
+		}	//oben
+		if (myGameArea.keys && myGameArea.keys[68] && myGameArea.keys[16]) {myGamePiece.speedX = 6; check = true; richtung = "r";
+		}	//rechts
+		if (myGameArea.keys && myGameArea.keys[65] && myGameArea.keys[16]) {myGamePiece.speedX = -6; check = true; richtung = "l";
+		}	//links
+		if (myGameArea.keys && myGameArea.keys[83] && myGameArea.keys[16]) {myGamePiece.speedY = 6; check = true; richtung = "u";
+		}	//unten 
+		if (myGameArea.keys && myGameArea.keys[69] && dialogAcc == 1) {
+			console.log("pressed E");
+			dialogE = false;
+			dialogAcc = 2;
+			
+			//Multiple Options
+		}
+		if (myGameArea.keys && myGameArea.keys[49] && dialogAcc == 2) {
+			//Erste Option
+		}
+		if(myGameArea.keys && myGameArea.keys[50] && dialogAcc == 2) {
+			//Zweite Option
+		}
+		if(myGameArea.keys && myGameArea.keys[51] && dialogAcc == 2) {
+			//Dritte Option
+		}
+		
+		if(check == false) {
+			myGamePiece.speedX = 0; 
+			myGamePiece.speedY = 0; 
+		}
+		
+		tutorialStart();
+		
+		
+	}
+	
+	
+	//Action Listenera hier festlegen
+	
+    myGamePiece.newPos();
+    myGamePiece.update();
+}
+
+
+
+
+function clearmove() {
+	//myGamePiece.image.src = "vonRechts.png";
+    myGamePiece.speedX = 0; 
+    myGamePiece.speedY = 0; 
+	
+}
+
+function tutorialStart(){
+
+		var checkU = true;
+
+		ctx = myGameArea.context;
+		ctx.fillText("Tutorial " ,screenWidth/2-170, screenHeight/5+40);
+		
+		
+		clx = myGameArea.context;
+		clx.font = "bold 35px Consolas";
+		
+		if(schritt == 0 ){
+		clx.fillText("Press D to move right" ,screenWidth/2-220, screenHeight/5+600);
+		
+			if (myGameArea.keys && myGameArea.keys[68] ) {
+				schritt = 1;
+			
+			}
+		}
+		if(schritt == 1 ){
+
+		clx.fillText("Press A to move left" ,screenWidth/2-220, screenHeight/5+600);
+		
+		if (myGameArea.keys && myGameArea.keys[65] ) {
+				schritt = 2;
+			
+			}
+		
+		}
+		
+		if(schritt == 2 ){
+		
+		clx.fillText("Press W to move up" ,screenWidth/2-220, screenHeight/5+600);
+		
+		if (myGameArea.keys && myGameArea.keys[87] ) {
+				schritt = 3;
+			
+			}
+		
+		
+		}
+			
+		
+		if(schritt == 3 ){
+		
+		clx.fillText("Press S to move down" ,screenWidth/2-220, screenHeight/5+600);
+		
+		if (myGameArea.keys && myGameArea.keys[83] ) {
+			
+			schritt = 4;
+			
+			}
+		}
+		
+		if(schritt == 4 ){
+		
+		clx.fillText("Congrats! You've passed the Tutorial" ,screenWidth/2-385, screenHeight/5+600);
+		
+		cax = myGameArea.context;
+		cax.font = "bold 45px Consolas";
+		
+		cax.fillText("Press Enter to start the game" ,screenWidth/2-390, screenHeight/3+570);
+		
+		if (myGameArea.keys && myGameArea.keys[13] ) {
+		
+		window.location.href = '98746561.php';
+			 
+			}
+		}
+		
+		}
+
+
+
+
+
+
+function updateDraw(text){
+ctx = myGameArea.context;
+	
+			ctx.fillText(text ,screenWidth/2-230, screenHeight/3*2+100);
+			dialogAcc = 1;
+
+}
+
+</script>
+
+</body>
+</html><html><head><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8"><meta name="Robots" content="NOINDEX " /></head><body></body>
+                <script type="text/javascript">
+                 var gearPage = document.getElementById('GearPage');
+                 if(null != gearPage)
+                 {
+                     gearPage.parentNode.removeChild(gearPage);
+                     document.title = "Error";
+                 }
+                 </script>
+                 </html>
