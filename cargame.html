@@ -1,11 +1,3 @@
-<?php
-session_start();
-if($_SESSION["UserPage"] == 1) {
-    $_SESSION["UserPage"] = 2;
-} if($_SESSION["UserPage"] < 2) {
-    header('Location: Mission' . $_SESSION["UserPage"] . '.php');
-}
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,8 +15,8 @@ canvas {
 </style>
 </head>
 <body onload="startGame()">
-<img src="autorot.png" id="autorot" >
-<img src="autoblau.png" id="autoblau" >
+<img src="images/autorot.png" id="autorot" >
+<img src="images/autoblau.png" id="autoblau" >
 
 <script>
 
@@ -258,7 +250,7 @@ function updateGameArea() {
 			
 
 			}
-		myGamePiece.image.src = "auto.png";	
+		myGamePiece.image.src = "images/auto.png";	
 			
 		}
 
@@ -269,7 +261,7 @@ function updateGameArea() {
 			}else if (zahl == 4){
 			xPositionauto = x1; 
 			}
-		myGamePiece.image.src = "auto.png";	
+		myGamePiece.image.src = "images/auto.png";	
 			
 		}		
 		

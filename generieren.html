@@ -14,10 +14,10 @@ canvas {
 </style>
 </head>
 <body onload="startGame()">
-<img src="Hindernis.png" id="hindernis" >
-<img src="cop1.png" id="cop1">
-<img src="Ziel.png" id="ziel">
-<img src="Hindernisq.png" id="hindernisq">
+<img src="images/Hindernis.png" id="hindernis" >
+<img src="images/cop1.png" id="cop1">
+<img src="images/Ziel.png" id="ziel">
+<img src="images/Hindernisq.png" id="hindernisq">
 <script>
 
 var myGamePiece; 
@@ -445,16 +445,16 @@ function updateGameArea() {
 		if (g == true) {
 			var check = false;
 			if (myGameArea.keys && myGameArea.keys[87]) {
-			myGamePiece.speedY = -2; check = true; myGamePiece.image.src = "vonHinten.png";
+			myGamePiece.speedY = -2; check = true; myGamePiece.image.src = "images/vonHinten.png";
 			}	//oben
 			if (myGameArea.keys && myGameArea.keys[68]) {
-			myGamePiece.speedX = 2; check = true; myGamePiece.image.src = "vonLinks.png";	
+			myGamePiece.speedX = 2; check = true; myGamePiece.image.src = "images/vonLinks.png";	
 			}	//rechts
 			if (myGameArea.keys && myGameArea.keys[65]) {
-			myGamePiece.speedX = -2; check = true; myGamePiece.image.src = "vonRechts.png";	
+			myGamePiece.speedX = -2; check = true; myGamePiece.image.src = "images/vonRechts.png";	
 			}	//links
 			if (myGameArea.keys && myGameArea.keys[83]) {
-			myGamePiece.speedY = 2; check = true; myGamePiece.image.src = "vonVorne.png";	
+			myGamePiece.speedY = 2; check = true; myGamePiece.image.src = "images/vonVorne.png";	
 			}	//unten 
 			
 			if (myGameArea.keys && myGameArea.keys[87] && myGameArea.keys[16]) {

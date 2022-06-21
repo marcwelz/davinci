@@ -20,9 +20,6 @@ font-size: 20px;
 </head>
 <body onload="startGame()">
 
-
-
-
 <script>
 
 var myGamePiece; 
@@ -207,13 +204,13 @@ function updateGameArea() {
 	
 	} else {
 		var check = false;
-		if (myGameArea.keys && myGameArea.keys[87]) {myGamePiece.speedY = -2; check = true; richtung = "o" ; myGamePiece.image.src = "vonHinten.png";	
+		if (myGameArea.keys && myGameArea.keys[87]) {myGamePiece.speedY = -2; check = true; richtung = "o" ; myGamePiece.image.src = "images/vonHinten.png";	
 		}	//oben
-		if (myGameArea.keys && myGameArea.keys[68]) {myGamePiece.speedX = 2; check = true; richtung = "r"; myGamePiece.image.src = "vonLinks.png";	
+		if (myGameArea.keys && myGameArea.keys[68]) {myGamePiece.speedX = 2; check = true; richtung = "r"; myGamePiece.image.src = "images/vonLinks.png";	
 		}	//rechts
-		if (myGameArea.keys && myGameArea.keys[65]) {myGamePiece.speedX = -2; check = true; richtung = "l"; myGamePiece.image.src = "vonRechts.png";	
+		if (myGameArea.keys && myGameArea.keys[65]) {myGamePiece.speedX = -2; check = true; richtung = "l"; myGamePiece.image.src = "images/vonRechts.png";	
 		}	//links
-		if (myGameArea.keys && myGameArea.keys[83]) {myGamePiece.speedY = 2; check = true; richtung = "u"; myGamePiece.image.src = "vonVorne.png";	
+		if (myGameArea.keys && myGameArea.keys[83]) {myGamePiece.speedY = 2; check = true; richtung = "u"; myGamePiece.image.src = "images/vonVorne.png";	
 		}	//unten 
 		
 		if (myGameArea.keys && myGameArea.keys[87] && myGameArea.keys[16]) {myGamePiece.speedY = -6; check = true; richtung = "o";	

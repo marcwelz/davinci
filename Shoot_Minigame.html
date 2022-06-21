@@ -14,13 +14,13 @@ canvas {
 </style>
 </head>
 <body onload="startGame()">
-<img src="cop1.png" id="cop1">
-<img src="cop2.png" id="cop2">
-<img src="m4Weapon.png" id="M4">
-<img src="sniper.png" id="sniper">
-<img src="ak74.png" id="ak74">
-<img src="ak74u.png" id="ak74u">
-<img src="spark.png" id="spark">
+<img src="images/cop1.png" id="cop1">
+<img src="images/cop2.png" id="cop2">
+<img src="images/m4Weapon.png" id="M4">
+<img src="images/sniper.png" id="sniper">
+<img src="images/ak74.png" id="ak74">
+<img src="images/ak74u.png" id="ak74u">
+<img src="images/spark.png" id="spark">
 <script>
 
 var myGamePiece; 
@@ -621,13 +621,13 @@ function updateGameArea() {
 			}
 		} if (g == true) {
 			var check = false;
-			if (myGameArea.keys && myGameArea.keys[87]) {myGamePiece.speedY = -2; check = true; myGamePiece.image.src = "vonHinten.png";
+			if (myGameArea.keys && myGameArea.keys[87]) {myGamePiece.speedY = -2; check = true; myGamePiece.image.src = "images/vonHinten.png";
 			}	//oben
-			if (myGameArea.keys && myGameArea.keys[68]) {myGamePiece.speedX = 2; check = true; myGamePiece.image.src = "vonLinks.png";
+			if (myGameArea.keys && myGameArea.keys[68]) {myGamePiece.speedX = 2; check = true; myGamePiece.image.src = "images/vonLinks.png";
 			}	//rechts
-			if (myGameArea.keys && myGameArea.keys[65]) {myGamePiece.speedX = -2; check = true; myGamePiece.image.src = "vonRechts.png";
+			if (myGameArea.keys && myGameArea.keys[65]) {myGamePiece.speedX = -2; check = true; myGamePiece.image.src = "images/vonRechts.png";
 			}	//links
-			if (myGameArea.keys && myGameArea.keys[83]) {myGamePiece.speedY = 2; check = true; myGamePiece.image.src = "vonVorne.png"; 		
+			if (myGameArea.keys && myGameArea.keys[83]) {myGamePiece.speedY = 2; check = true; myGamePiece.image.src = "images/vonVorne.png"; 		
 			}	//unten 
 			
 			if (myGameArea.keys && myGameArea.keys[87] && myGameArea.keys[16]) {myGamePiece.speedY = -6; check = true;

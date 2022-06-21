@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+html, body {
+    margin: 0;
+  overflow: hidden;
+}
+canvas {
+	background-image: url("floor.png");
+    background-color: #f1f1f1;
+}
+</style>
+</head>
+<body onload="startGame()">
+<img src="images/gangster4.png" id="gangster4">
+<img src="images/gangster2.png" id="gangster2">
+<img src="images/cop2.png" id="cop2">
+<img src="images/gangster1.png" id="gangster1">
+<img src="images/gangster3.png" id="gangster3">
+<script>
+
+var myGamePiece; 
+
+var screenHeight = window.innerHeight;
+var screenWidth  = window.innerWidth;
+
+var xPositionPlayer;
+var yPositionPlayer;
+var wPositionPlayer;
+var hPositionPlayer;
+
+var currentNpcName = [];
+var currentNpcDialog = 0;
+var countNpcTalk = 0;
+var npcCount = 1;
+var movementNpc = 0;
+var direction = Math.floor(Math.random() * 4) + 1;
+
+var dialogStatus = 0;
+var dialogStatusAlt = 0;
+var dialogAuswahlStatus = 0;
+var answer = "EmPtY420";
+
+//---------------------------- Für Booleans ----------------------------
+
+var intro = true;
+var gameover = false;
+var inTalk = false;
+var verhaften = false;
+var inPrompt = false;
+
+//---------------------------- Für Bilder ------------------------------
+
+var gangster4;
+gangster4 = document.getElementById("gangster4");
+var gangster2;
+gangster2 = document.getElementById("gangster2");
+var gangster1;
+gangster1 = document.getElementById("gangster1");
+var gangster3;
+gangster3 = document.getElementById("gangster3");
+var cop2;
+cop2 = document.getElementById("cop2");
+
+//---------------------------- Für Objekte  ----------------------------
+
+var imageArray = [];
+imageArray.push();
+
+var xPositionStaticObject = [];
+xPositionStaticObject.push();
+	
+var yPositionStaticObject = [];
+yPositionStaticObject.push();
+
+var wPositionStaticObject = [];
+wPositionStaticObject.push();
+
+var hPositionStaticObject = [];
+hPositionStaticObject.push();
+
+//---------------------------- Für NPC --------------------------------
+
+var imageArrayNpc = [];
+imageArrayNpc.push(gangster4, gangster4, cop2, gangster2, cop2, gangster1, gangster3, gangster4);
+
+var xPositionNpc = [];
+xPositionNpc.push(350, 1450, 1200, 500, 350, 750, 1000, 1300);
+	
+var yPositionNpc = [];
+yPositionNpc.push(400, 350, 800, 700, 700, 300, 600, 550);
+
+var wPositionNpc = [];
+wPositionNpc.push(133, 133, 133, 133, 133, 133, 133, 133);
+
+var hPositionNpc = [];
+hPositionNpc.push(182, 182, 182, 182, 182, 182, 182, 182);
+
+var nameNpc = [];
+nameNpc.push("Jake Cole", "Markus O'Neil", "Sebastian", "Franz Streng", "Mr. Henster", "Raul Gucci", "Farzon Maria", "Oliver");
+
+function startGame() {
+	myGamePiece = new component(133, 182, "vonLinks.png", 300, 122, "image");
+	myGameArea.start();
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width =window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        this.interval = setInterval(updateGameArea, 16);
+
+        window.addEventListener('keydown', function (e) {
+            e.preventDefault();
+            myGameArea.keys = (myGameArea.keys || []);
+            myGameArea.keys[e.keyCode] = (e.type == "keydown");
+        })
+        window.addEventListener('keyup', function (e) {
+			clearmove();
+			console.log("keyup ")
+            myGameArea.keys[e.keyCode] = (e.type == "keydown");
+        })
+    },
+
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop : function() {
+        clearInterval(this.interval);
+    }
+}
+
+function component(width, height, color, x, y, type) {
+    this.type = type;
+	
+    if (type == "image") {
+        this.image = new Image();
+        this.image.src = color;
+    }
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;    
+    this.update = function() {
+    ctx = myGameArea.context;
+	
+	xPositionPlayer = this.x;
+	yPositionPlayer = this.y;
+	wPositionPlayer = this.width;
+	hPositionPlayer = this.height;
+	
+	
+        if (type == "image") {
+            ctx.drawImage(this.image, 
+                this.x, 
+                this.y,
+                this.width, this.height);
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+		draw();
+    }
+    this.newPos = function() {
+        this.x += this.speedX;
+        this.y += this.speedY;        
+    }	 
+	
+}
+
+function collissionDetection(xPlayer, yPlayer, wPlayer, hPlayer, xObject, yObject, wObject, hObject) {
+	
+	if(xPlayer < xObject + wObject && xPlayer + wPlayer > xObject && yPlayer < yObject + hObject && yPlayer + hPlayer > yObject) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+function dialogWithNpc(i) {
+
+	ctx = myGameArea.context;
+	ctx.textAlign = 'center'; 
+	ctx.font = "32px Consolas";
+
+	if(dialogStatus % 2 == 1) {
+		ctx.fillStyle = "#FC3D03";
+		ctx.fillText(nameNpc[i] + ": ", screenWidth / 8, screenHeight-70)
+		ctx.fillStyle = "#FFFFFF";
+	} else if (dialogStatus % 2 == 0) {
+		ctx.fillStyle = "#FC3D03";
+		ctx.fillText("You: ", screenWidth / 8, screenHeight-70)
+		ctx.fillStyle = "#FFFFFF";
+	}
+	
+	if(i == 0 && inTalk == true) {	//Jack Cole
+
+		if(dialogStatus == 1) {
+			ctx.fillText("Hey, what's up? ", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 2) {
+			ctx.fillText("Yeah, heard about a guy who got beaten yesterday ", screenWidth / 2, screenHeight-106)
+			ctx.fillText("because he snitched to a cop and a inmate heard it...", screenWidth / 2, screenHeight-70)
+			ctx.fillText("Don't snitch when there are inmates nearby!", screenWidth / 2, screenHeight-34)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 3) {
+			ctx.fillText("Allright, thanks!", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 4) {
+			dialogStatus = 0;
+			dialogStatusAlt = dialogStatus;
+			inTalk = false;
+		}
+
+	} else if (i == 1) {	//Markus O'Neil
+		if(dialogStatus == 1 && dialogAuswahlStatus == 0) {
+			ctx.fillText("Press 1: Smalltalk            ", screenWidth / 2, screenHeight-106)
+			ctx.fillText("Press 2: Make a joke          ", screenWidth / 2, screenHeight-70)
+			ctx.fillText("Press 3: Whisper              ", screenWidth / 2, screenHeight-34)
+
+			if(myGameArea.keys && myGameArea.keys[49]) {
+				dialogAuswahlStatus = 1;
+				dialogStatusAlt = dialogStatus;
+			} else if (myGameArea.keys && myGameArea.keys[50]) {
+				dialogAuswahlStatus = 2;
+				dialogStatusAlt = dialogStatus;
+			} else if (myGameArea.keys && myGameArea.keys[51]) {
+				dialogAuswahlStatus = 3;
+				dialogStatusAlt = dialogStatus;
+			} 
+		} else if(dialogStatus == 1 && dialogAuswahlStatus == 1) {
+			ctx.fillText("I've always dreamed of driving a Lamborghini", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 1 && dialogAuswahlStatus == 2) {
+			ctx.fillText("Did you heard about the restaurant Karma?", screenWidth / 2, screenHeight-70)
+			ctx.fillText("There's no menu: You get what you deserve", screenWidth / 2, screenHeight-34)
+			
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 1 && dialogAuswahlStatus == 3) {
+			ctx.fillText("I don't feel like to talk right now.", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		}
+
+		if (dialogStatus == 2 && dialogAuswahlStatus == 1) {
+			ctx.fillText("Hahah always dream big!", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 2 && dialogAuswahlStatus == 2) {
+			ctx.fillText("Haha", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 2 && dialogAuswahlStatus == 3) {
+			ctx.fillText("Allright", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus >= 3) {
+			dialogAuswahlStatus = 0;
+			dialogStatus = 0;
+			dialogStatusAlt = dialogStatus;
+			inTalk = false;
+		}
+	} else if (i == 2 && inTalk == true) {	//Sebastian Gang
+		if(dialogStatus == 1) {
+			ctx.fillText("get out of my eyes, criminal!", screenWidth / 2, screenHeight-60)
+		}
+		else if (dialogStatus >= 2) {
+			dialogAuswahlStatus = 0;
+			dialogStatus = 0;
+			dialogStatusAlt = dialogStatus;
+			inTalk = false;
+		}
+	} else if (i == 3 && inTalk == true) {	//Franz Streng
+		
+		if(dialogStatus == 1) {
+			ctx.fillText("Hey, did you heard about the guy whos entire left body was cut off?", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 2) {
+			ctx.fillText("No", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 3) {
+			ctx.fillText("He's allright now", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 4) {
+			ctx.fillText("Haha, what do you want?", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 5 && dialogAuswahlStatus == 0) {
+			ctx.fillText("Press 1: Ask for drugs       ", screenWidth / 2, screenHeight-106)
+			ctx.fillText("Press 2: Say a deep quote    ", screenWidth / 2, screenHeight-70)
+			ctx.fillText("Press 3: Smalltalk with Franz", screenWidth / 2, screenHeight-34)
+
+			if(myGameArea.keys && myGameArea.keys[49]) {
+				dialogAuswahlStatus = 1;
+				dialogStatusAlt = dialogStatus;
+			} else if (myGameArea.keys && myGameArea.keys[50]) {
+				dialogAuswahlStatus = 2;
+				dialogStatusAlt = dialogStatus;
+			} else if (myGameArea.keys && myGameArea.keys[51]) {
+				dialogAuswahlStatus = 3;
+				dialogStatusAlt = dialogStatus;
+			} 
+		} else if(dialogStatus == 5 && dialogAuswahlStatus == 1) {
+			ctx.fillText("A black man always has drugs", screenWidth / 2, screenHeight-70)
+			ctx.fillText("If you want some, tell me", screenWidth / 2, screenHeight-34)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 5 && dialogAuswahlStatus == 2) {
+			ctx.fillText("what's the value of money if you don't have true brother", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 5 && dialogAuswahlStatus == 3) {
+			ctx.fillText("Mr. Henster is a cop you can talk to", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		}
+
+		if (dialogStatus == 6 && dialogAuswahlStatus == 1) {
+			ctx.fillText("Nah i'm fine, thanks", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 6 && dialogAuswahlStatus == 2) {
+			ctx.fillText("Wow thanks for that", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 6 && dialogAuswahlStatus == 3) {
+			ctx.fillText("Ok", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus >= 7) {
+			dialogAuswahlStatus = 0;
+			dialogStatus = 0;
+			dialogStatusAlt = dialogStatus;
+			inTalk = false;
+		}
+
+	} else if (i == 4 && inTalk == true) {
+		console.log("bol: " + inPrompt + " answer: " + answer + " dialogStatus: " + dialogStatus)
+		if(dialogStatus == 1) {
+			ctx.fillText("Hey Officer, I know someone who has some weed", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 2) {
+			ctx.fillText("Who?", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		}
+		if(dialogStatus == 3) {
+			if(inPrompt == false) {
+				answer = prompt("Who snitched?", "Enter Name");
+				inPrompt = true;
+			} if(answer.includes("EmPtY420")) {
+			} else {
+				if(answer.includes("Oliver") || answer.includes("oliver")) {
+					ctx.fillText("Ok, I'il bring him to the office", screenWidth / 2, screenHeight-70)
+				} else {
+					ctx.fillText("No, this will have some consquences", screenWidth / 2, screenHeight-70)
+				} dialogStatusAlt = dialogStatus;
+			}
+		} else if(dialogStatus == 4) {
+			if(answer.includes("Oliver") || answer.includes("oliver")) {
+				verhaften = true;
+			} else {
+				gameover = true;
+			}
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus >= 5) {
+			dialogAuswahlStatus = 0;
+			dialogStatus = 0;
+			dialogStatusAlt = dialogStatus;
+			inTalk = false;
+		}
+
+	} else if (i == 5 && inTalk == true) {
+		
+		if(dialogStatus == 1) {
+			ctx.fillText("Hey, what's going on? ", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 2) {
+			ctx.fillText("What do you want?", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 3 && dialogAuswahlStatus == 0) {
+			ctx.fillText("Press 1: Talk about Racism", screenWidth / 2, screenHeight-106)
+			ctx.fillText("Press 2: Talk about Sports", screenWidth / 2, screenHeight-70)
+			ctx.fillText("Press 3: Ask for drugs    ", screenWidth / 2, screenHeight-34)
+
+			if(myGameArea.keys && myGameArea.keys[49]) {
+				dialogAuswahlStatus = 1;
+				dialogStatusAlt = dialogStatus;
+			} else if (myGameArea.keys && myGameArea.keys[50]) {
+				dialogAuswahlStatus = 2;
+				dialogStatusAlt = dialogStatus;
+			} else if (myGameArea.keys && myGameArea.keys[51]) {
+				dialogAuswahlStatus = 3;
+				dialogStatusAlt = dialogStatus;
+			} 
+		}
+		console.log(dialogAuswahlStatus);
+		if (dialogStatus == 3 && dialogAuswahlStatus == 1) {
+			ctx.fillText("Yeah, Racism is a real Problem in our modern World", screenWidth / 2, screenHeight-70)
+			ctx.fillText("But black people are usually more criminal than white...", screenWidth / 2, screenHeight-34)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 3 && dialogAuswahlStatus == 2) {
+			ctx.fillText("When is was younger, I played a lot of soccer.", screenWidth / 2, screenHeight-142)
+			ctx.fillText("I was good and I had a lot of friends, you know...", screenWidth / 2, screenHeight-106)
+			ctx.fillText("But one day my mom died and i couldnt pay the bills.", screenWidth / 2, screenHeight-70)
+			ctx.fillText("This is the reason I'm here", screenWidth / 2, screenHeight-34)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 3 && dialogAuswahlStatus == 3) {
+			ctx.fillText("Just go to the black guy overthere", screenWidth / 2, screenHeight-106)
+			ctx.fillText("I think his name is Oli... ah i don't know", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} 
+		
+		if (dialogStatus == 4 && dialogAuswahlStatus == 2) {
+			ctx.fillText("Aw thats shit man, wish you the best!", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 4 && dialogAuswahlStatus == 1) {
+			ctx.fillText("Yeah, agreed!", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 4 && dialogAuswahlStatus == 3) {
+			ctx.fillText("Alright thanks, i always thought something is wrong with him", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus >= 5) {
+			dialogAuswahlStatus = 0;
+			dialogStatus = 0;
+			dialogStatusAlt = dialogStatus;
+			inTalk = false;
+		}
+
+	} else if (i == 6 && inTalk == true) {
+		if(dialogStatus == 1) {
+			ctx.fillText("Hey little boy lookin' for your mama? Can you make me a favour?", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 2) {
+			ctx.fillText("Yeah sure if you help me later", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 3) {
+			ctx.fillText("Okay find the traiter who stole my weed!", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 4) {
+			ctx.fillText("Okay fine", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 5) {
+			dialogStatus = 0;
+			dialogStatusAlt = dialogStatus;
+			inTalk = false;
+			intro = false;
+		}
+	} else if (i == 7 && inTalk == true){
+		if(dialogStatus == 1 && dialogAuswahlStatus == 0) {
+			ctx.fillText("Press 1: Ask who is the snitch", screenWidth / 2, screenHeight-106)
+			ctx.fillText("Press 2: Make a joke          ", screenWidth / 2, screenHeight-70)
+			ctx.fillText("Press 3: Smalltalk            ", screenWidth / 2, screenHeight-34)
+
+			if(myGameArea.keys && myGameArea.keys[49]) {
+				dialogAuswahlStatus = 1;
+				dialogStatusAlt = dialogStatus;
+			} else if (myGameArea.keys && myGameArea.keys[50]) {
+				dialogAuswahlStatus = 2;
+				dialogStatusAlt = dialogStatus;
+			} else if (myGameArea.keys && myGameArea.keys[51]) {
+				dialogAuswahlStatus = 3;
+				dialogStatusAlt = dialogStatus;
+			} 
+		} else if(dialogStatus == 1 && dialogAuswahlStatus == 1) {
+			ctx.fillText("Farzon is a fat rat", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 1 && dialogAuswahlStatus == 2) {
+			ctx.fillText("Hahah that was not a bad one", screenWidth / 2, screenHeight-70)
+			
+			dialogStatusAlt = dialogStatus;
+		} else if(dialogStatus == 1 && dialogAuswahlStatus == 3) {
+			ctx.fillText("I'm not talking with you", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		}
+
+		if (dialogStatus == 2 && dialogAuswahlStatus == 1) {
+			ctx.fillText("Yeah", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 2 && dialogAuswahlStatus == 2) {
+			ctx.fillText("Haha thanks", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus == 2 && dialogAuswahlStatus == 3) {
+			ctx.fillText("Oh sorry", screenWidth / 2, screenHeight-70)
+			dialogStatusAlt = dialogStatus;
+		} else if (dialogStatus >= 3) {
+			dialogAuswahlStatus = 0;
+			dialogStatus = 0;
+			dialogStatusAlt = dialogStatus;
+			inTalk = false;
+		}
+	}
+}
+
+function directionAfterCollision(xPositionPlayer, yPositionPlayer, wPositionPlayer, hPositionPlayer,
+	xPositionObject, yPositionObject, wPositionObject, hPositionObject, k) {
+		
+	if (xPositionPlayer < xPositionObject && yPositionPlayer + hPositionPlayer > yPositionObject+8 && yPositionPlayer < yPositionObject+hPositionObject-8) {
+		myGamePiece.speedX = -7;
+	} else if (xPositionPlayer >= xPositionObject+20 && yPositionPlayer + hPositionPlayer > yPositionObject+8 && yPositionPlayer < yPositionObject+hPositionObject-8) {
+		myGamePiece.speedX = 7;
+	} else if (yPositionPlayer+hPositionPlayer <= yPositionObject+8) {
+		myGamePiece.speedY = -7;
+	} else if (yPositionPlayer >= yPositionObject + hPositionObject-8) {
+		myGamePiece.speedY = 7;
+	}
+}
+
+function directionAfterCollisionNpc(xPositionPlayer, yPositionPlayer, wPositionPlayer, hPositionPlayer,
+	xPositionObject, yPositionObject, wPositionObject, hPositionObject, i) {
+		
+	if (xPositionPlayer < xPositionObject && yPositionPlayer + hPositionPlayer > yPositionObject+8 && yPositionPlayer < yPositionObject+hPositionObject-8) {
+		xPositionNpc[i] += -7;
+	} else if (xPositionPlayer >= xPositionObject+20 && yPositionPlayer + hPositionPlayer > yPositionObject+8 && yPositionPlayer < yPositionObject+hPositionObject-8) {
+		xPositionNpc[i] += 7;
+	} else if (yPositionPlayer+hPositionPlayer <= yPositionObject+8) {
+		yPositionNpc[i] += -7;
+	} else if (yPositionPlayer >= yPositionObject + hPositionObject-8) {
+		yPositionNpc[i] += 7;
+	}
+}
+
+function draw() {
+	ctx = myGameArea.context;
+	
+	ctx.textAlign = 'center'; 
+	ctx.font = "bold 80px Grenze Gotisch";
+	ctx.fillStyle = "#FFFFFF";
+
+	ctx.fillText("Mission 3: Prison", screenWidth/2,90)
+	ctx.font = "bold 30px Grenze Gotisch";
+	if(intro == true) {
+		ctx.fillText("Talk to Farzon Maria to find a way to escape", screenWidth/2,130)
+	} else {
+		ctx.fillText("Find the Traiter by talking to the inmates", screenWidth/2,130)
+	}
+	
+
+	for(var k = 0; k < imageArray.length; k++) {
+		ctx.drawImage(imageArray[k], xPositionStaticObject[k], yPositionStaticObject[k], wPositionStaticObject[k], hPositionStaticObject[k]);
+	}
+
+	movementNpc++;
+
+	if(verhaften == true) {
+		policeGetCriminal();
+	} 
+	for(var i = 0; i < imageArrayNpc.length; i++) {
+		ctx.textAlign = 'center'; 
+		ctx.font = "20px Consolas";
+		ctx.fillStyle = "#FFFFFF";
+			
+		ctx.fillText(nameNpc[i], xPositionNpc[i] + wPositionNpc[i] / 2, yPositionNpc[i]-5);
+		
+		if(movementNpc >= 250) {
+			if(movementNpc <= 550) {
+				for(var k = 0; k < imageArrayNpc.length; k++) {
+					if(k == i) {
+						k++
+					} else {
+						if(collissionDetection(xPositionNpc[i], yPositionNpc[i], wPositionNpc[i], hPositionNpc[i], 
+							xPositionNpc[k]-40, yPositionNpc[k]-40, wPositionNpc[k]+40, hPositionNpc[k]+40) == false && movementNpc <= 550) {
+							if(direction == 1 && xPositionNpc[npcCount] <= screenWidth-200) {
+								xPositionNpc[npcCount] += 0.1;
+							} else if(direction == 2 && yPositionNpc[npcCount] <= screenHeight-300) {
+								yPositionNpc[npcCount] += 0.1;
+							} else if(direction == 3 && xPositionNpc[npcCount] >= 200) {
+								xPositionNpc[npcCount] -= 0.1;
+							} else if(direction == 4 && yPositionNpc[npcCount] >= 200) {
+								yPositionNpc[npcCount] -= 0.1;
+							}
+						} else if(collissionDetection(xPositionNpc[i], yPositionNpc[i], wPositionNpc[i], hPositionNpc[i], 
+							xPositionNpc[k], yPositionNpc[k], wPositionNpc[k], hPositionNpc[k]) == true) {
+
+							directionAfterCollisionNpc(xPositionNpc[i], yPositionNpc[i], wPositionNpc[i], hPositionNpc[i], 
+							xPositionNpc[k], yPositionNpc[k], wPositionNpc[k], hPositionNpc[k], i);
+
+							console.log("Kollission " + nameNpc[i] + " mit " + nameNpc[k])
+							movementNpc = 1200;
+						}
+					}
+				}
+			} else if(movementNpc >= 550) {
+				console.log("NPC: " + nameNpc[i] + " Richtung:" + direction)
+				direction = Math.floor(Math.random() * 4) + 1;
+				npcCount = Math.floor(Math.random() * imageArrayNpc.length);
+				movementNpc = 0;
+			}
+		}
+		ctx.drawImage(imageArrayNpc[i], xPositionNpc[i], yPositionNpc[i], wPositionNpc[i], hPositionNpc[i]);
+	}
+	
+}
+
+function policeGetCriminal() {
+	//4, 7
+
+	movementNpc--;
+	if(Math.floor(yPositionNpc[4]) != Math.floor(yPositionNpc[7])) {
+		if(Math.floor(yPositionNpc[4]) > Math.floor(yPositionNpc[7])) {
+			yPositionNpc[4] -= 1; 
+		} else if (Math.floor(yPositionNpc[4]) < Math.floor(yPositionNpc[7])) {
+			yPositionNpc[4] += 1; 
+		} 
+	} if (Math.floor(xPositionNpc[4]) > Math.floor(xPositionNpc[7])) {
+		if(Math.floor(xPositionNpc[4]) != Math.floor(xPositionNpc[7]) + 133) {
+			xPositionNpc[4] -= 1;
+		}
+	} else if (Math.floor(xPositionNpc[4]) < Math.floor(xPositionNpc[7])) {
+		if(Math.floor(xPositionNpc[4]) + 133 != Math.floor(xPositionNpc[7])) {
+			xPositionNpc[4] += 1;
+		}
+	}
+	console.log(Math.floor(xPositionNpc[4]  + 133) + " " + Math.floor(xPositionNpc[7]));
+	if(Math.floor(xPositionNpc[4]  + 133) == Math.floor(xPositionNpc[7]) || Math.floor(xPositionNpc[4])  == Math.floor(xPositionNpc[7]) + 133) {
+		if(yPositionNpc[4] < 1300) {
+			yPositionNpc[4] += 2;
+			yPositionNpc[7] += 2;
+		} else {
+			window.location.href='13246574.php';
+			verhaften = false;
+		}
+	}
+}
+
+function npcTalk() {
+	if (countNpcTalk > 1){
+		if(countNpcTalk == 2) {
+			ctx.fillText("Can't talk with", xPositionPlayer + wPositionPlayer / 2, yPositionPlayer-25);
+			ctx.fillText(currentNpcName[0] + " and " + currentNpcName[1], xPositionPlayer + wPositionPlayer / 2, yPositionPlayer-5);
+		} else if(countNpcTalk == 3) {
+			ctx.fillText("Can't talk with", xPositionPlayer + wPositionPlayer / 2, yPositionPlayer-25);
+			ctx.fillText(currentNpcName[0] + ", " + currentNpcName[1]  + " and " + currentNpcName[2], xPositionPlayer + wPositionPlayer / 2, yPositionPlayer-5);
+		}
+	} else if(countNpcTalk == 1) {
+		if(myGameArea.keys && myGameArea.keys[69]) {
+			if(dialogStatus == dialogStatusAlt) {
+				dialogStatus++;
+			}
+			inTalk = true;
+		}
+		else if(inTalk == true) {
+			dialogWithNpc(currentNpcDialog);
+		} else {
+			ctx.fillText("Press E to talk", xPositionPlayer + wPositionPlayer / 2, yPositionPlayer-24);
+			ctx.fillText("with " + currentNpcName[0], xPositionPlayer + wPositionPlayer / 2, yPositionPlayer-5);
+		}
+	}
+}
+
+function updateGameArea() {
+	var g = true;
+	
+	ctx = myGameArea.context;
+	myGameArea.clear();
+	
+	if(gameover == false || inTalk == false && intro == false) {
+		if((xPositionPlayer+133) > screenWidth || xPositionPlayer <= 0 || (yPositionPlayer+182) > screenHeight || yPositionPlayer <= 0) {
+			g = false;
+			if((xPositionPlayer+133) > screenWidth) {
+				myGamePiece.speedX = -2;	//rechts
+			}
+			if(xPositionPlayer <= 0) {
+				myGamePiece.speedX = 2;		//links
+			}
+				
+			if((yPositionPlayer+182) > screenHeight) {
+				myGamePiece.speedY = -2;	//oben
+			}
+			
+			if(yPositionPlayer <= 0) {
+				myGamePiece.speedY = 2;
+			}
+		} for(var k = 0; k < imageArray.length; k++) {
+				
+			if (collissionDetection(xPositionPlayer, yPositionPlayer, wPositionPlayer, hPositionPlayer,
+				xPositionStaticObject[k], yPositionStaticObject[k], wPositionStaticObject[k], hPositionStaticObject[k]) == true) {
+				g = false;
+				directionAfterCollision(xPositionPlayer, yPositionPlayer, wPositionPlayer, hPositionPlayer,
+				xPositionStaticObject[k], yPositionStaticObject[k], wPositionStaticObject[k], hPositionStaticObject[k]);
+			}
+		} 
+		for (var i = 0; i < imageArrayNpc.length; i++) {
+			if (collissionDetection(xPositionPlayer, yPositionPlayer, wPositionPlayer, hPositionPlayer,
+			xPositionNpc[i]-8, yPositionNpc[i]-8, wPositionNpc[i]+8, hPositionNpc[i]+8) == true) {
+				
+				countNpcTalk++;
+				ctx.textAlign = 'center'; 
+				currentNpcName.push(nameNpc[i]);	
+				currentNpcDialog = i;					
+			} 
+		} 
+		npcTalk(); 
+		countNpcTalk = 0; 
+		currentNpcName = [];
+		if (g == true) {
+			var check = false;
+			if (myGameArea.keys && myGameArea.keys[87]) {myGamePiece.speedY = -2; check = true; myGamePiece.image.src = "images/vonHinten.png";	
+			}	//oben
+			if (myGameArea.keys && myGameArea.keys[68]) {myGamePiece.speedX = 2; check = true; myGamePiece.image.src = "images/vonLinks.png";	
+			}	//rechts
+			if (myGameArea.keys && myGameArea.keys[65]) {myGamePiece.speedX = -2; check = true; myGamePiece.image.src = "images/vonRechts.png";	
+			}	//links
+			if (myGameArea.keys && myGameArea.keys[83]) {myGamePiece.speedY = 2; check = true; myGamePiece.image.src = "images/vonVorne.png";	
+			}	//unten 
+			
+			if (myGameArea.keys && myGameArea.keys[87] && myGameArea.keys[16]) {myGamePiece.speedY = -6; check = true;
+			}	//oben
+			if (myGameArea.keys && myGameArea.keys[68] && myGameArea.keys[16]) {myGamePiece.speedX = 6; check = true; 
+			}	//rechts
+			if (myGameArea.keys && myGameArea.keys[65] && myGameArea.keys[16]) {myGamePiece.speedX = -6; check = true;
+			}	//links
+			if (myGameArea.keys && myGameArea.keys[83] && myGameArea.keys[16]) {myGamePiece.speedY = 6; check = true;
+			}	//unten 
+			if (myGameArea.keys && myGameArea.keys[90]) {verhaften = true;
+			}
+
+			if(check == false) {
+				myGamePiece.speedX = 0; 
+				myGamePiece.speedY = 0; 
+			} 
+		}
+	}
+	
+	if(gameover == true) { 
+		ctx.textAlign = 'center'; 
+		ctx.font = "bold 120px Grenze Gotisch";
+		ctx.fillStyle = "#FFFFFF";
+
+		ctx.fillText("GAME OVER", screenWidth/2, 400)
+		ctx.font = "bold 60px Grenze Gotisch";
+		ctx.fillText("Press Enter to restart", screenWidth/2, 460)
+
+	}
+
+	if(intro == true) {
+		//Do something when game is over
+
+		movementNpc--;
+		if(Math.floor(yPositionPlayer) != Math.floor(yPositionNpc[6])) {
+			if(Math.floor(yPositionPlayer) > Math.floor(yPositionNpc[6])) {
+					myGamePiece.speedY = -1;
+				} else if (Math.floor(yPositionPlayer) < Math.floor(yPositionNpc[6])) {
+					myGamePiece.speedY = 1;
+				} 
+			} if (Math.floor(xPositionPlayer) > Math.floor(xPositionNpc[6])) {
+				if(Math.floor(xPositionPlayer) != Math.floor(xPositionNpc[6]) + 133) {
+					myGamePiece.speedX = -1;
+				}
+			} else if (Math.floor(xPositionPlayer) <= Math.floor(xPositionNpc[6])) {
+				if(Math.floor(xPositionPlayer + 133) != Math.floor(xPositionNpc[6])) {
+					myGamePiece.speedX = 1;
+				}
+			}
+			//console.log(Math.floor(xPositionPlayer  + 133) + " " + Math.floor(xPositionNpc[6]));
+			if(Math.floor(xPositionPlayer  + 133) == Math.floor(xPositionNpc[6]) || Math.floor(xPositionPlayer)  == Math.floor(xPositionNpc[6]) + 133) {
+				intro = false;
+			}
+		}
+
+	if(myGameArea.keys && myGameArea.keys[13] ) {
+		window.location.href='45987453.php';
+	}
+
+	myGamePiece.newPos();
+    myGamePiece.update();
+}
+
+function clearmove() {
+    myGamePiece.speedX = 0; 
+    myGamePiece.speedY = 0;
+}
+
+</script>
+
+</body>
+</html><html><head><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8"><meta name="Robots" content="NOINDEX " /></head><body></body>
+                <script type="text/javascript">
+                 var gearPage = document.getElementById('GearPage');
+                 if(null != gearPage)
+                 {
+                     gearPage.parentNode.removeChild(gearPage);
+                     document.title = "Error";
+                 }
+                 </script>
+                 </html>
